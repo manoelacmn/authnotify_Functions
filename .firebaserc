@@ -1,0 +1,8 @@
+{
+  "projects": {
+    "default": "authnotify-560ba",
+    "authNotify": "authnotify-3e5b6"
+  },
+  "targets": {},
+  "etags": {}
+}

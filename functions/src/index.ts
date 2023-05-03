@@ -1,8 +1,12 @@
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
-
+import * as fb from "firebase-admin/firestore";
 // inicializando o firebase admin
+
 const firebase = admin.initializeApp();
+const db = fb.getFirestore();
+
+const batch = db.batch();
 
 type Usuario = {
   nome: string,
@@ -27,7 +31,7 @@ type CustomResponse = {
 /**
  * Essa função pura (sem ser cloud function)
  * verifica se o parametro data contem:
- * nome, email, telefone e uid (lembrando que
+ * nome, email,  telefone e uid (lembrando que
  * a senha não armazenamos no perfil do firestore).
  * @param {any} data - objeto data (any).
  * @return {boolean} - true se tiver dados corretos
@@ -98,6 +102,22 @@ export const setUserProfile = functions
     return JSON.stringify(cResponse);
   });
 
+export const updateUserFcm = functions.
+  region("southamerica-east1")
+  .https.
+  onCall(async (data, context) => {
+    const uid = context.auth?.uid;
+    const fcmtoken = data.fcmtoken;
+
+    const usersRef = db.collection("users");
+    const snapshot = await usersRef.where("uid", "==", uid).get();
+
+    snapshot.forEach((doc) => {
+      const tempRef = db.collection("users").doc(doc.id);
+      batch.update(tempRef, {fcmToken: fcmtoken});
+    });
+  });
+
 export const sendFcmMessage = functions
   .region("southamerica-east1")
   .runWith({enforceAppCheck: false})
@@ -135,4 +155,5 @@ export const sendFcmMessage = functions
     }
     return JSON.stringify(cResponse);
   });
+
 

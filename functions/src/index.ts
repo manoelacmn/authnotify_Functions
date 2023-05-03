@@ -112,9 +112,10 @@ export const updateUserFcm = functions.
     const usersRef = db.collection("users");
     const snapshot = await usersRef.where("uid", "==", uid).get();
 
-    snapshot.forEach((doc) => {
+    snapshot.forEach(async (doc) => {
       const tempRef = db.collection("users").doc(doc.id);
       batch.update(tempRef, {fcmToken: fcmtoken});
+      await batch.commit();
     });
   });
 
